@@ -1,0 +1,6 @@
+{
+  "name": "Tid-Tam-Naam (ติดตามน้ำ)",
+  "description": "แอปพลิเคชันติดตามสถานการณ์น้ำ อุทกภัย กล้อง CCTV เตือนภัยพิบัติ และศูนย์แจ้งเหตุฉุกเฉิน สำหรับ Cloudflare Pages",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

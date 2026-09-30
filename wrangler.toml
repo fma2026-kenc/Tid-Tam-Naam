@@ -1,0 +1,15 @@
+# Wrangler configuration for Cloudflare Pages / Workers
+name = "tid-tam-naam"
+compatibility_date = "2026-09-29"
+pages_build_output_dir = "dist"
+
+# Cloudflare KV Namespace Binding (Optional for syncing bookmarks & custom links across devices)
+# [[kv_namespaces]]
+# binding = "USER_PREFERENCES_KV"
+# id = "your_kv_namespace_id_here"
+# preview_id = "your_kv_preview_id_here"
+
+# Environment variables
+[vars]
+ENVIRONMENT = "production"
+APP_NAME = "Tid-Tam-Naam (ติดตามน้ำ)"
