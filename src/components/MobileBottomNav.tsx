@@ -7,12 +7,14 @@ interface MobileBottomNavProps {
   currentTab: TabId;
   onTabChange: (tab: TabId) => void;
   customLinksCountByTab?: Record<TabId, number>;
+  mobileViewMode?: 'list' | 'viewer';
 }
 
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   currentTab,
   onTabChange,
   customLinksCountByTab,
+  mobileViewMode = 'list',
 }) => {
   const getIcon = (id: TabId, isActive: boolean) => {
     const iconClass = `w-5 h-5 transition-transform ${isActive ? 'scale-110' : ''}`;
@@ -52,7 +54,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 <span className="absolute top-1 w-6 h-1 rounded-full bg-[#0077B6]" />
               )}
 
-              <div className="relative mt-1">
+              <div className="relative mt-0.5">
                 {getIcon(section.id, isActive)}
                 {customCount > 0 && (
                   <span className="absolute -top-1 -right-2 w-3.5 h-3.5 bg-emerald-500 text-white rounded-full text-[9px] flex items-center justify-center font-bold">
@@ -61,9 +63,15 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 )}
               </div>
 
-              <span className="text-[10px] md:text-[11px] tracking-tight mt-1 truncate max-w-[85px] leading-tight">
+              <span className="text-[10px] md:text-[11px] tracking-tight mt-0.5 truncate max-w-[85px] leading-tight">
                 {section.shortName}
               </span>
+
+              {isActive && (
+                <span className="text-[9px] text-[#0077B6] font-bold leading-none scale-90">
+                  {mobileViewMode === 'list' ? '• รายการ' : '• หน้าเว็บ'}
+                </span>
+              )}
             </button>
           );
         })}

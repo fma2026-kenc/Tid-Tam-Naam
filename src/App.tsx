@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { ChevronLeft, ExternalLink } from 'lucide-react';
 import { Header } from './components/Header';
 import { MobileBottomNav } from './components/MobileBottomNav';
 import { TabletSidebar } from './components/TabletSidebar';
@@ -38,6 +39,7 @@ export default function App() {
   const [targetAddSection, setTargetAddSection] = useState<TabId>('water_level');
   const [isDeployModalOpen, setIsDeployModalOpen] = useState<boolean>(false);
   const [emergencyViewMode, setEmergencyViewMode] = useState<'directory' | 'webview'>('directory');
+  const [mobileViewMode, setMobileViewMode] = useState<'list' | 'viewer'>('list');
   const [toastMessage, setToastMessage] = useState<string>('');
 
   const showToast = (msg: string) => {
@@ -112,6 +114,8 @@ export default function App() {
     if (currentTab === 'emergency') {
       setEmergencyViewMode('webview');
     }
+    // Switch to viewer mode on smartphone so user sees the web content immediately!
+    setMobileViewMode('viewer');
   };
 
   // Handler for pinning default URL: Automatically moves this link to the very top!
@@ -196,10 +200,17 @@ export default function App() {
   };
 
   const handleTabChange = (tab: TabId) => {
+    if (currentTab === tab) {
+      // Tapping the active tab on mobile toggles between card list and viewer!
+      setMobileViewMode((prev) => (prev === 'list' ? 'viewer' : 'list'));
+      return;
+    }
     setCurrentTab(tab);
     if (tab === 'emergency') {
       setEmergencyViewMode('directory');
     }
+    // When changing to another tab on mobile, show the cards list so user can choose
+    setMobileViewMode('list');
   };
 
   const handleQuickEmergencyReport = (url: string, title: string) => {
@@ -214,6 +225,7 @@ export default function App() {
     };
     handleSelectLink(reportLink);
     setEmergencyViewMode('webview');
+    setMobileViewMode('viewer');
   };
 
   const currentDefaultUrl = preferences.defaultUrls[currentTab];
@@ -238,27 +250,69 @@ export default function App() {
       <div className="flex flex-1 min-h-0 relative">
         {/* Tablet & Desktop Side Drawer / Bookmark Selector */}
         {currentTab !== 'emergency' || emergencyViewMode === 'webview' ? (
-          <TabletSidebar
-            currentTab={currentTab}
-            allLinks={allLinks}
-            activeLink={currentActiveLink}
-            defaultUrl={currentDefaultUrl}
-            hasHiddenLinks={hasHiddenLinks}
-            isCollapsed={sidebarCollapsed}
-            onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
-            onSelectLink={handleSelectLink}
-            onOpenAddModal={handleOpenAddModal}
-            onOpenManageModal={() => setIsManageModalOpen(true)}
-            onEditCustomLink={handleEditCustomLink}
-            onRequestDeleteLink={handleRequestDeleteLink}
-            onSetDefault={handleSetDefault}
-            onRestoreAllHidden={handleRestoreAllHidden}
-            onReorderLinks={handleReorderLinks}
-          />
+          <div
+            className={`${
+              mobileViewMode === 'viewer' ? 'hidden md:flex' : 'flex'
+            } w-full md:w-80 lg:w-96 shrink-0 h-full`}
+          >
+            <TabletSidebar
+              currentTab={currentTab}
+              allLinks={allLinks}
+              activeLink={currentActiveLink}
+              defaultUrl={currentDefaultUrl}
+              hasHiddenLinks={hasHiddenLinks}
+              isCollapsed={sidebarCollapsed}
+              onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+              onSelectLink={handleSelectLink}
+              onOpenAddModal={handleOpenAddModal}
+              onOpenManageModal={() => setIsManageModalOpen(true)}
+              onEditCustomLink={handleEditCustomLink}
+              onRequestDeleteLink={handleRequestDeleteLink}
+              onSetDefault={handleSetDefault}
+              onRestoreAllHidden={handleRestoreAllHidden}
+              onReorderLinks={handleReorderLinks}
+              onSwitchToViewer={() => setMobileViewMode('viewer')}
+            />
+          </div>
         ) : null}
 
         {/* Content Viewer Area */}
-        <main className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden">
+        <main
+          className={`${
+            mobileViewMode === 'list' && (currentTab !== 'emergency' || emergencyViewMode === 'webview')
+              ? 'hidden md:flex'
+              : 'flex'
+          } flex-1 flex-col min-w-0 h-full relative overflow-hidden`}
+        >
+          {/* Mobile Top Navigation Bar (Visible only on mobile in viewer mode) */}
+          <div className="md:hidden flex items-center justify-between px-3 py-2 bg-slate-900 text-white border-b border-slate-800 shrink-0 z-20 shadow-xs">
+            <button
+              type="button"
+              onClick={() => setMobileViewMode('list')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold active:scale-95 transition-all min-h-[38px] border border-slate-700/80 shadow-xs"
+            >
+              <ChevronLeft className="w-4 h-4 text-[#0077B6]" />
+              <span>รายการการ์ด ({allLinks.filter((l) => l.section === currentTab).length})</span>
+            </button>
+
+            <div className="flex-1 px-2 text-center min-w-0">
+              <span className="text-xs font-bold truncate block text-slate-100">
+                {currentActiveLink.title}
+              </span>
+            </div>
+
+            <a
+              href={currentActiveLink.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-2.5 py-1.5 rounded-xl bg-[#0077B6] hover:bg-[#0284C7] text-white text-xs font-bold flex items-center gap-1 min-h-[38px] shrink-0 active:scale-95 shadow-xs"
+              title="เปิดในแท็บเบราว์เซอร์ใหม่"
+            >
+              <span>เปิดเว็บ</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+
           {currentTab === 'emergency' && emergencyViewMode === 'directory' ? (
             <EmergencyDirectory onSelectReportLink={handleQuickEmergencyReport} />
           ) : (
@@ -279,6 +333,7 @@ export default function App() {
         currentTab={currentTab}
         onTabChange={handleTabChange}
         customLinksCountByTab={customLinksCountByTab}
+        mobileViewMode={mobileViewMode}
       />
 
       {/* Custom Link Builder Modal ("สร้างลิงค์ส่วนตัว") */}

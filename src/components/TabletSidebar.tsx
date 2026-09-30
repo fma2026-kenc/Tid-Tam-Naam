@@ -19,6 +19,7 @@ import {
   GripVertical,
   MoveVertical,
   CheckCircle2,
+  ArrowRight,
 } from 'lucide-react';
 import { LinkItem, TabId } from '../types';
 import { SECTIONS } from '../data/defaultLinks';
@@ -39,6 +40,7 @@ interface TabletSidebarProps {
   onSetDefault: (section: TabId, url: string) => void;
   onRestoreAllHidden: () => void;
   onReorderLinks: (section: TabId, reorderedIds: string[]) => void;
+  onSwitchToViewer?: () => void;
 }
 
 export const TabletSidebar: React.FC<TabletSidebarProps> = ({
@@ -57,6 +59,7 @@ export const TabletSidebar: React.FC<TabletSidebarProps> = ({
   onSetDefault,
   onRestoreAllHidden,
   onReorderLinks,
+  onSwitchToViewer,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'official' | 'custom'>('all');
@@ -265,6 +268,17 @@ export const TabletSidebar: React.FC<TabletSidebarProps> = ({
             </h2>
           </div>
           <div className="flex items-center gap-1">
+            {onSwitchToViewer && (
+              <button
+                type="button"
+                onClick={onSwitchToViewer}
+                className="md:hidden flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-sky-50 text-[#0077B6] font-bold text-xs border border-sky-100 min-h-[36px]"
+                title="สลับไปดูหน้าเว็บ"
+              >
+                <span>ดูหน้าเว็บ</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
             <button
               onClick={onOpenManageModal}
               className="p-1.5 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors min-h-[36px] min-w-[36px] flex items-center justify-center"
@@ -371,11 +385,6 @@ export const TabletSidebar: React.FC<TabletSidebarProps> = ({
             <div
               key={link.id}
               data-card-index={index}
-              draggable={true}
-              onDragStart={(e) => handleDragStart(e, index)}
-              onDragOver={(e) => handleDragOver(e, index)}
-              onDragEnd={handleDragEnd}
-              onPointerDown={(e) => handlePointerDown(index, e)}
               onClick={() => onSelectLink(link)}
               className={`group relative p-3 rounded-2xl border transition-all duration-150 cursor-pointer ${
                 isBeingDragged
@@ -393,6 +402,7 @@ export const TabletSidebar: React.FC<TabletSidebarProps> = ({
                   title="กดค้างเพื่อเลื่อนสลับตำแหน่ง หรือใช้ปุ่มลูกศร"
                 >
                   <button
+                    type="button"
                     onClick={(e) => handleMoveUp(index, e)}
                     disabled={index === 0}
                     className={`p-0.5 rounded hover:bg-slate-200/70 text-slate-400 hover:text-slate-800 transition-colors ${
@@ -404,11 +414,20 @@ export const TabletSidebar: React.FC<TabletSidebarProps> = ({
                     <ChevronUp className="w-3.5 h-3.5" />
                   </button>
 
-                  <div className="py-0.5 cursor-grab active:cursor-grabbing text-slate-400 hover:text-[#0077B6]">
+                  <div
+                    draggable={true}
+                    onDragStart={(e) => handleDragStart(e, index)}
+                    onDragOver={(e) => handleDragOver(e, index)}
+                    onDragEnd={handleDragEnd}
+                    onPointerDown={(e) => handlePointerDown(index, e)}
+                    className="py-1 cursor-grab active:cursor-grabbing text-slate-400 hover:text-[#0077B6] touch-none"
+                    title="กดค้างเพื่อเลื่อนสลับตำแหน่ง"
+                  >
                     <GripVertical className="w-4 h-4" />
                   </div>
 
                   <button
+                    type="button"
                     onClick={(e) => handleMoveDown(index, e)}
                     disabled={index === filteredLinks.length - 1}
                     className={`p-0.5 rounded hover:bg-slate-200/70 text-slate-400 hover:text-slate-800 transition-colors ${
@@ -459,6 +478,36 @@ export const TabletSidebar: React.FC<TabletSidebarProps> = ({
                       {link.description}
                     </p>
                   )}
+
+                  {/* Explicit Open/View Button */}
+                  <div className="mt-2.5 flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onSelectLink(link);
+                      }}
+                      className={`flex-1 py-1.5 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-[0.98] ${
+                        isSelected
+                          ? 'bg-[#0077B6] text-white shadow-xs'
+                          : 'bg-sky-50/90 hover:bg-sky-100 text-[#0077B6] border border-sky-200/70'
+                      }`}
+                    >
+                      <span>{isSelected ? 'เปิดดูอยู่ขณะนี้' : 'เปิดดูหน้านี้'}</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+
+                    <a
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors min-h-[32px] min-w-[32px] flex items-center justify-center shrink-0"
+                      title="เปิดในแท็บเบราว์เซอร์ใหม่"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
                 </div>
 
                 {/* Card Right Actions (Edit, External Link, Delete) */}
